@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ball Runaway</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Madimi+One&display=swap");
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: 'Madimi One', cursive;
+      background: #f2f2f2; /* Light theme background */
+      color: #333; /* Light theme font color */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    #ball {
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle at 50% 50%, #ff6666, #ff3333); /* Light theme ball color */
+      border-radius: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      transition: background 0.5s ease, transform 1s ease; /* Add slow transform transition */
+    }
+
+    #greeting, #time, #date, #theme-switcher { 
+      position: absolute;
+      padding: 12px 16px; /* Increased padding */
+      background-color: rgba(0, 0, 0, 0.1); /* Light theme box color */
+      border: none;
+      border-radius: 20px;
+      font-family: 'Madimi One', cursive;
+      color: #333; /* Light theme font color */
+      transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transitions */
+      font-size: 16px;  /* Base font size */
+    }
+
+    #greeting { 
+      top: 20px;
+      left: 20px;
+    }
+
+    #time {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40px;  /* Reduced time size */
+    }
+
+    #date {
+      top: 20px;
+      right: 20px; 
+    }
+
+    #theme-switcher {
+      bottom: 20px;
+      right: 20px;
+      cursor: pointer;
+      font-size: 18px; /* Larger button font size */
+      padding: 15px 20px; /* Increased button padding */
+    }
+
+    /* Dark theme styles */
+    body.dark-theme {
+      background: #333;
+      color: #f2f2f2; /* Dark theme font color */
+    }
+
+    body.dark-theme #greeting,
+    body.dark-theme #time,
+    body.dark-theme #date,
+    body.dark-theme #theme-switcher {
+      background-color: rgba(255, 255, 255, 0.1); /* Dark theme box color */
+      color: #f2f2f2;
+    }
+
+    #ball.dark-theme {
+      background: radial-gradient(circle at 50% 50%, #ffff66, #ffff33);
+    }
+  </style>
+</head>
+<body>
+  <div id="ball"></div>
+  <div id="greeting"></div> 
+  <div id="time"></div>
+  <div id="date"></div>
+  <button id="theme-switcher">Switch Theme</button> 
+
+  <script>
+    
+    const ball = document.getElementById('ball');
+    const timeDiv = document.getElementById('time');
+    const greetingDiv = document.getElementById('greeting');
+    const dateDiv = document.getElementById('date'); 
+    let xDirection = 1;
+    let yDirection = 1;
+    const speed = 8;
+    const sensitivity = 75;
+    const ballDiameter = 50;
+
+    function moveBall() {
+      let ballX = ball.offsetLeft;
+      let ballY = ball.offsetTop;
+
+      if (ballX <= 0) {
+        xDirection *= -1; 
+      } else if (ballX >= window.innerWidth - ballDiameter) {
+        xDirection *= -1;
+      }
+
+      if (ballY <= 0) {
+        yDirection *= -1; 
+      } else if (ballY >= window.innerHeight - ballDiameter) {
+        yDirection *= -1; 
+      }
+
+      ballX = ballX + (speed * xDirection);
+      ballY = ballY + (speed * yDirection);
+
+      ball.style.left = ballX + "px";
+      ball.style.top = ballY + "px";
+
+      requestAnimationFrame(moveBall);
+    }
+
+    function handleMouseMove(event) {
+      let mouseX = event.clientX;
+      let mouseY = event.clientY;
+      let ballX = ball.offsetLeft;
+      let ballY = ball.offsetTop;
+
+      let distance = Math.sqrt(Math.pow(mouseX - ballX, 2) + Math.pow(mouseY - ballY, 2));
+
+      if (distance < sensitivity) {
+        xDirection = (ballX > mouseX) ? 1 : -1;
+        yDirection = (ballY > mouseY) ? 1 : -1;
+      }
+    }
+
+    function updateTime() {
+      const now = new Date();
+      const timeOptions = { 
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, 
+        hour: 'numeric', 
+        minute: '2-digit', 
+        second: '2-digit' 
+      };
+      timeDiv.textContent = now.toLocaleTimeString('en-US', timeOptions); 
+
+      const dateOptions = { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      };
+      dateDiv.textContent = now.toLocaleDateString('en-US', dateOptions); 
+
+      const hour = now.getHours();
+      if (hour >= 5 && hour < 12) {
+        greetingDiv.textContent = "Good morning!";
+      } else if (hour >= 12 && hour < 18) {
+        greetingDiv.textContent = "Good afternoon!";
+      } else {
+        greetingDiv.textContent = "Good evening!";
+      }
+    }
+
+    const themeSwitcher = document.getElementById('theme-switcher');
+    let darkTheme = false; 
+
+    themeSwitcher.addEventListener('click', () => {
+      darkTheme = !darkTheme; 
+
+      if (darkTheme) {
+        document.body.classList.add('dark-theme');
+        ball.classList.add('dark-theme');
+      } else {
+        document.body.classList.remove('dark-theme');
+        ball.classList.remove('dark-theme');
+      }
+    });
+
+    document.addEventListener('mousemove', handleMouseMove);
+    moveBall();
+    updateTime(); 
+    setInterval(updateTime, 1000); 
+  </script>
+</body>
+</html>
